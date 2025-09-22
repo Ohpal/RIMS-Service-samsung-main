@@ -93,12 +93,12 @@ roles_files=(
 ### Start Docker Compose
 
 ```sh
-$ docker-compose up setup
-$ docker-compose up
+$ docker compose up setup
+$ docker compose up
 ```
 
 ### Stop and Reset Docker Compose
 
 ```sh
-$ docker-compose down -v
+$ docker compose down -v
 ```
