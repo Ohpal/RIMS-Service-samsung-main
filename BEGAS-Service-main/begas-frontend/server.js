@@ -1,37 +1,37 @@
 // deploy/server.js
-const express = require("express")
-const { spawn } = require("child_process")
-const path = require("path")
-const fs = require("fs")
-const { createProxyMiddleware } = require("http-proxy-middleware")
-const winston = require("winston")
-require("winston-daily-rotate-file")
-const { Pool } = require("pg")
+const express = require('express')
+const { spawn } = require('child_process')
+const path = require('path')
+const fs = require('fs')
+const { createProxyMiddleware } = require('http-proxy-middleware')
+const winston = require('winston')
+require('winston-daily-rotate-file')
+const { Pool } = require('pg')
 
 const app = express()
 const date = new Date()
 const port = process.env.VITE_PORT_HTTP || 4800 // 기본 HTTP 포트
 
-const distDir = path.join(__dirname, "/dist")
+const distDir = path.join(__dirname, '/dist')
 
 // console.log('clientIP = ', clientIp)
-console.log("distDir = ", distDir)
-console.log("configPath =", process.env.VUE_APP_CONFIG_PATH)
-console.log("logPath =", process.env.VUE_APP_LOG_PATH)
-console.log("env.mode = ", process.env.NODE_ENV)
-console.log("apiTarget = ", process.env.VUE_APP_API_TARGET)
-console.log("https port =", process.env.VUE_APP_PORT_HTTPS)
-console.log("http port =", process.env.VUE_APP_PORT_HTTP)
+console.log('distDir = ', distDir)
+console.log('configPath =', process.env.VUE_APP_CONFIG_PATH)
+console.log('logPath =', process.env.VUE_APP_LOG_PATH)
+console.log('env.mode = ', process.env.NODE_ENV)
+console.log('apiTarget = ', process.env.VUE_APP_API_TARGET)
+console.log('https port =', process.env.VUE_APP_PORT_HTTPS)
+console.log('http port =', process.env.VUE_APP_PORT_HTTP)
 
 /* winston logger */
 const level = () => {
-  const env = process.env.NODE_ENV || "development"
-  const isDevelopment = env === "development"
-  return isDevelopment ? "debug" : "warn"
+  const env = process.env.NODE_ENV || 'development'
+  const isDevelopment = env === 'development'
+  return isDevelopment ? 'debug' : 'warn'
 }
 
 const loggerFormat = winston.format.combine(
-  winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss ||" }),
+  winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss ||' }),
   winston.format.printf((info) => `${info.timestamp} [ ${info.level} ] ${info.message}`)
 )
 
@@ -40,18 +40,18 @@ const logger = winston.createLogger({
   level: level(),
   transports: [
     new winston.transports.DailyRotateFile({
-      level: "info",
-      datePattern: "YYYY-MM-DD",
-      dirname: process.env.VUE_APP_LOG_PATH || "./logs",
-      filename: "svc-starter-ui-%DATE%.log",
+      level: 'info',
+      datePattern: 'YYYY-MM-DD',
+      dirname: process.env.VUE_APP_LOG_PATH || './logs',
+      filename: 'svc-starter-ui-%DATE%.log',
       zippedArchive: true,
       handleExceptions: true,
     }),
     new winston.transports.DailyRotateFile({
-      level: "error",
-      datePattern: "YYYY-MM-DD",
-      dirname: process.env.VUE_APP_LOG_PATH || "./logs",
-      filename: "svc-starter-ui-%DATE%.error.log",
+      level: 'error',
+      datePattern: 'YYYY-MM-DD',
+      dirname: process.env.VUE_APP_LOG_PATH || './logs',
+      filename: 'svc-starter-ui-%DATE%.error.log',
       zippedArchive: true,
     }),
     new winston.transports.Console({ handleExceptions: true }),
@@ -60,18 +60,18 @@ const logger = winston.createLogger({
 
 // -------------------- CORS 헤더 설정 --------------------
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*")
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
+  res.header('Access-Control-Allow-Origin', '*')
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
   next()
 })
 
-if (process.env.NODE_ENV === "production" || process.env.NODE_ENV === "staging") {
+if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging') {
   //https 설정
-  const https = require("https")
+  const https = require('https')
   const options = {
     key: fs.readFileSync(`${process.env.VITE_CONFIG_PATH}/ssl/server.key`).toString(),
     cert: fs.readFileSync(`${process.env.VITE_CONFIG_PATH}/ssl/server.crt`).toString(),
-    passphrase: "blueone",
+    passphrase: 'blueone',
   }
 
   const httpsServer = https.createServer(options, app)
@@ -82,24 +82,24 @@ if (process.env.NODE_ENV === "production" || process.env.NODE_ENV === "staging")
 
   // app.use(createProxyMiddleware('/sdf', { target: 'http://192.168.7.169:3080/', changeOrigin: true }))
   app.use(
-    createProxyMiddleware("/krakend", {
+    createProxyMiddleware('/krakend', {
       target: `${process.env.VITE_API_TARGET}`,
-      pathRewrite: { "^/krakend": "" },
+      pathRewrite: { '^/krakend': '' },
       changeOrigin: true,
       onError: (err, req, res) => {
         logger.error(JSON.stringify(err))
       },
       onProxyReq: function (proxyReq, req, rsp) {
-        const logString = `||REQ|HTTP|${req.method}|${proxyReq.host}|||||${req.headers["x-apiversion"]}|${req.url}|`
+        const logString = `||REQ|HTTP|${req.method}|${proxyReq.host}|||||${req.headers['x-apiversion']}|${req.url}|`
 
         logger.info(logString)
       },
       onProxyRes: function (proxyRes, req, res) {
-        let logString = `||RES|HTTP|${res.req.method}|${proxyRes.req.host}|||||${res.req.headers["x-apiversion"]}|${res.req.url}|`
+        let logString = `||RES|HTTP|${res.req.method}|${proxyRes.req.host}|||||${res.req.headers['x-apiversion']}|${res.req.url}|`
 
-        proxyRes.on("data", (data) => {
-          if (!proxyRes.headers["content-type"].includes("octet-stream") && !proxyRes.headers["content-type"].includes("image")) {
-            const bufferAsString = data.toString("utf-8")
+        proxyRes.on('data', (data) => {
+          if (!proxyRes.headers['content-type'].includes('octet-stream') && !proxyRes.headers['content-type'].includes('image')) {
+            const bufferAsString = data.toString('utf-8')
             logString += bufferAsString
             logger.info(logString)
           } else logger.info(logString)
@@ -108,7 +108,7 @@ if (process.env.NODE_ENV === "production" || process.env.NODE_ENV === "staging")
     })
   )
   app.use(
-    createProxyMiddleware("/api/v1/ws", {
+    createProxyMiddleware('/api/v1/ws', {
       target: `${process.env.VITE_WS_TARGET}`,
       changeOrigin: true,
       ws: true,
@@ -116,16 +116,16 @@ if (process.env.NODE_ENV === "production" || process.env.NODE_ENV === "staging")
         logger.error(JSON.stringify(err))
       },
       onProxyReq: function (proxyReq, req, rsp) {
-        const logString = `||REQ|HTTP|${req.method}|${proxyReq.host}|||||${req.headers["x-apiversion"]}|${req.url}|`
+        const logString = `||REQ|HTTP|${req.method}|${proxyReq.host}|||||${req.headers['x-apiversion']}|${req.url}|`
 
         logger.info(logString)
       },
       onProxyRes: function (proxyRes, req, res) {
-        let logString = `||RES|HTTP|${res.req.method}|${proxyRes.req.host}|||||${res.req.headers["x-apiversion"]}|${res.req.url}|`
+        let logString = `||RES|HTTP|${res.req.method}|${proxyRes.req.host}|||||${res.req.headers['x-apiversion']}|${res.req.url}|`
 
-        proxyRes.on("data", (data) => {
-          if (!proxyRes.headers["content-type"].includes("octet-stream") && !proxyRes.headers["content-type"].includes("image")) {
-            const bufferAsString = data.toString("utf-8")
+        proxyRes.on('data', (data) => {
+          if (!proxyRes.headers['content-type'].includes('octet-stream') && !proxyRes.headers['content-type'].includes('image')) {
+            const bufferAsString = data.toString('utf-8')
             logString += bufferAsString
             logger.info(logString)
           } else logger.info(logString)
@@ -212,26 +212,25 @@ if (process.env.NODE_ENV === "production" || process.env.NODE_ENV === "staging")
 // })
 
 app.use(
-  createProxyMiddleware("/dbdata", {
-    // target: `http://10.150.231.96:4850/dbdata`,
+  createProxyMiddleware('/dbdata', {
     target: `http://192.100.0.10:4850/dbdata`,
-    pathRewrite: { "^/dbdata": "" },
+    pathRewrite: { '^/dbdata': '' },
     changeOrigin: true,
-    logLevel: "debug",
+    logLevel: 'debug',
     onError: (err, req, res) => {
       logger.error(JSON.stringify(err))
     },
     onProxyReq: function (proxyReq, req, rsp) {
-      const logString = `||REQ|HTTP|${req.method}|${proxyReq.host}|||||${req.headers["x-apiversion"]}|${req.url}|`
+      const logString = `||REQ|HTTP|${req.method}|${proxyReq.host}|||||${req.headers['x-apiversion']}|${req.url}|`
 
       logger.info(logString)
     },
     onProxyRes: function (proxyRes, req, res) {
-      let logString = `||RES|HTTP|${res.req.method}|${proxyRes.req.host}|||||${res.req.headers["x-apiversion"]}|${res.req.url}|`
+      let logString = `||RES|HTTP|${res.req.method}|${proxyRes.req.host}|||||${res.req.headers['x-apiversion']}|${res.req.url}|`
 
-      proxyRes.on("data", (data) => {
-        if (!proxyRes.headers["content-type"].includes("octet-stream") && !proxyRes.headers["content-type"].includes("image")) {
-          const bufferAsString = data.toString("utf-8")
+      proxyRes.on('data', (data) => {
+        if (!proxyRes.headers['content-type'].includes('octet-stream') && !proxyRes.headers['content-type'].includes('image')) {
+          const bufferAsString = data.toString('utf-8')
           logString += bufferAsString
           logger.info(logString)
         } else logger.info(logString)
@@ -241,55 +240,26 @@ app.use(
 )
 
 app.use(
-  createProxyMiddleware("/analysis-api", {
+  createProxyMiddleware('/analysis-api', {
     target: `http://192.100.0.10:4850/analysis-api`,
     // target: `http://localhost:5000/analysis-api`,
-    pathRewrite: { "^/analysis-api": "" },
+    pathRewrite: { '^/analysis-api': '' },
     changeOrigin: true,
-    logLevel: "debug",
+    logLevel: 'debug',
     onError: (err, req, res) => {
       logger.error(JSON.stringify(err))
     },
     onProxyReq: function (proxyReq, req, rsp) {
-      const logString = `||REQ|HTTP|${req.method}|${proxyReq.host}|||||${req.headers["x-apiversion"]}|${req.url}|`
+      const logString = `||REQ|HTTP|${req.method}|${proxyReq.host}|||||${req.headers['x-apiversion']}|${req.url}|`
 
       logger.info(logString)
     },
     onProxyRes: function (proxyRes, req, res) {
-      let logString = `||RES|HTTP|${res.req.method}|${proxyRes.req.host}|||||${res.req.headers["x-apiversion"]}|${res.req.url}|`
+      let logString = `||RES|HTTP|${res.req.method}|${proxyRes.req.host}|||||${res.req.headers['x-apiversion']}|${res.req.url}|`
 
-      proxyRes.on("data", (data) => {
-        if (!proxyRes.headers["content-type"].includes("octet-stream") && !proxyRes.headers["content-type"].includes("image")) {
-          const bufferAsString = data.toString("utf-8")
-          logString += bufferAsString
-          logger.info(logString)
-        } else logger.info(logString)
-      })
-    },
-  })
-)
-
-app.use(
-  createProxyMiddleware("/synth-data", {
-    target: `http://192.100.0.10:4850/synth-data`,
-    // target: `http://localhost:5000/analysis-api`,
-    pathRewrite: { "^/synth-data": "" },
-    changeOrigin: true,
-    logLevel: "debug",
-    onError: (err, req, res) => {
-      logger.error(JSON.stringify(err))
-    },
-    onProxyReq: function (proxyReq, req, rsp) {
-      const logString = `||REQ|HTTP|${req.method}|${proxyReq.host}|||||${req.headers["x-apiversion"]}|${req.url}|`
-
-      logger.info(logString)
-    },
-    onProxyRes: function (proxyRes, req, res) {
-      let logString = `||RES|HTTP|${res.req.method}|${proxyRes.req.host}|||||${res.req.headers["x-apiversion"]}|${res.req.url}|`
-
-      proxyRes.on("data", (data) => {
-        if (!proxyRes.headers["content-type"].includes("octet-stream") && !proxyRes.headers["content-type"].includes("image")) {
-          const bufferAsString = data.toString("utf-8")
+      proxyRes.on('data', (data) => {
+        if (!proxyRes.headers['content-type'].includes('octet-stream') && !proxyRes.headers['content-type'].includes('image')) {
+          const bufferAsString = data.toString('utf-8')
           logString += bufferAsString
           logger.info(logString)
         } else logger.info(logString)
@@ -300,25 +270,25 @@ app.use(
 
 /** proxy 설정 **/
 app.use(
-  createProxyMiddleware("/krakend", {
+  createProxyMiddleware('/krakend', {
     target: `${process.env.VITE_API_TARGET}`,
-    pathRewrite: { "^/krakend": "" },
+    pathRewrite: { '^/krakend': '' },
     changeOrigin: true,
-    logLevel: "debug",
+    logLevel: 'debug',
     onError: (err, req, res) => {
       logger.error(JSON.stringify(err))
     },
     onProxyReq: function (proxyReq, req, rsp) {
-      const logString = `||REQ|HTTP|${req.method}|${proxyReq.host}|||||${req.headers["x-apiversion"]}|${req.url}|`
+      const logString = `||REQ|HTTP|${req.method}|${proxyReq.host}|||||${req.headers['x-apiversion']}|${req.url}|`
 
       logger.info(logString)
     },
     onProxyRes: function (proxyRes, req, res) {
-      let logString = `||RES|HTTP|${res.req.method}|${proxyRes.req.host}|||||${res.req.headers["x-apiversion"]}|${res.req.url}|`
+      let logString = `||RES|HTTP|${res.req.method}|${proxyRes.req.host}|||||${res.req.headers['x-apiversion']}|${res.req.url}|`
 
-      proxyRes.on("data", (data) => {
-        if (!proxyRes.headers["content-type"].includes("octet-stream") && !proxyRes.headers["content-type"].includes("image")) {
-          const bufferAsString = data.toString("utf-8")
+      proxyRes.on('data', (data) => {
+        if (!proxyRes.headers['content-type'].includes('octet-stream') && !proxyRes.headers['content-type'].includes('image')) {
+          const bufferAsString = data.toString('utf-8')
           logString += bufferAsString
           logger.info(logString)
         } else logger.info(logString)
@@ -327,11 +297,11 @@ app.use(
   })
 )
 app.use(
-  createProxyMiddleware("/api/v1/ws", {
+  createProxyMiddleware('/api/v1/ws', {
     target: `${process.env.VITE_WS_TARGET}`,
     changeOrigin: true,
     ws: true,
-    logLevel: "debug",
+    logLevel: 'debug',
     onError: (err, req, res) => {
       logger.error(JSON.stringify(err))
     },
@@ -343,9 +313,9 @@ app.use(
     onProxyRes: function (proxyRes, req, res) {
       let logString = `||RES|HTTP|${res.req.method}|${proxyRes.req.host}||||||${res.req.url}|`
 
-      proxyRes.on("data", (data) => {
-        if (!proxyRes.headers["content-type"].includes("octet-stream") && !proxyRes.headers["content-type"].includes("image")) {
-          const bufferAsString = data.toString("utf-8")
+      proxyRes.on('data', (data) => {
+        if (!proxyRes.headers['content-type'].includes('octet-stream') && !proxyRes.headers['content-type'].includes('image')) {
+          const bufferAsString = data.toString('utf-8')
           logString += bufferAsString
           logger.info(logString)
         } else logger.info(logString)
@@ -355,8 +325,8 @@ app.use(
 )
 
 app.use(express.static(distDir))
-app.get("*", (req, res) => {
-  res.sendFile(distDir + "/index.html", function (err) {
+app.get('*', (req, res) => {
+  res.sendFile(distDir + '/index.html', function (err) {
     if (err) {
       res.status(500).send(err)
     }
