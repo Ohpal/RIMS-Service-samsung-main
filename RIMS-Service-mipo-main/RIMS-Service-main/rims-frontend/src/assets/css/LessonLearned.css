@@ -1,0 +1,121 @@
+.dropdown-menu {
+  --bs-dropdown-min-width: 5.5rem;
+}
+
+.row-padding {
+  padding-right: 3rem;
+}
+
+.list-group-item + .list-group-item {
+  border-top-width: thin;
+}
+/* .list-group-item:first-child,
+.list-group-item:last-child {
+  border-radius: 0px;
+} */
+
+/* .list-group- */
+.list-group-item {
+  border-radius: inherit;
+  margin: 0.5rem 0;
+  transition: all 0.3s ease; /* smooth animation */
+}
+
+.list-group {
+  max-height: 590px;
+  /* max-height: 47rem; */
+  margin-bottom: 10px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.input-group {
+  width: 70%;
+}
+
+.favorite-color {
+  color: gold;
+}
+
+.favorite-btn {
+  --bs-btn-border-width: 0;
+  outline: none !important;
+}
+
+.h4-header {
+  align-items: center;
+  margin-right: 1rem;
+}
+
+.keyword > button {
+  padding: 0.4rem 0.6rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.keyword {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+ul {
+  margin-top: 1rem;
+  margin-bottom: 0;
+}
+
+.list-group-item:hover {
+  /*   
+  background-color: #f0f8ff; light blue */
+
+  background-color: #daecfb; /* light blue */
+  transform: translateY(2px); /* slide slightly right */
+  cursor: pointer;
+}
+
+.list-group-item:focus,
+.list-group-item:active {
+  background-color: #c1eafd; /* stronger highlight */
+  transform: scale(1.02); /* subtle zoom */
+  outline: none; /* remove default outline */
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25); /* custom focus ring */
+}
+
+.long-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 1.5rem;
+}
+
+.big-small {
+  font-size: 0.7em;
+}
+
+.content-box-rims {
+  padding: 24px 32px 32px;
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.sub-title-rims {
+  font-size: 1.1rem;
+  /* line- */
+}
+.rims-custom-btn {
+  background: #4286f5 !important;
+  color: #fff !important; /* 원하는 파란색 */
+  border: 1.5px solid #4286f5 !important;
+  font-weight: bold;
+}
+.rims-custom-btn:hover,
+.rims-custom-btn:focus {
+  background: #0b5ed7 !important;
+  color: #f3f6fb !important;
+  border-color: #f3f6fb !important;
+}
+
+.st0 {
+  fill: #000000;
+}

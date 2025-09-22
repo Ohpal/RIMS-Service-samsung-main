@@ -1,0 +1,10 @@
+streamlit
+pandas
+matplotlib
+numpy
+scikit-learn
+SQLAlchemy
+psycopg2-binary
+flask
+flask-cors
+sdv

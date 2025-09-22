@@ -1,0 +1,23 @@
+# version: '3' ← 최신 Docker Compose에서는 생략 가능
+services:
+  begas-frontend:
+    container_name: begas-frontend
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: begas-frontend
+    ports:
+      - "4800:4800"
+    volumes:
+      - ./begas-frontend:/usr/share/nginx/html
+
+  beags-backend:
+    container_name: begas-backend
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: begas-backend
+    ports:
+      - "4850:4850"
+
+
